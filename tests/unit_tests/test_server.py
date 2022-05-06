@@ -1,4 +1,4 @@
-from multiprocessing import context
+import re
 import pytest
 from tests.conftest import client
 import server
@@ -112,8 +112,22 @@ def test_purchasePlaces_invalid_competition_points(client):
     )
     data = rv.data.decode()
     template, context = templates[0]
-    print(context)
     assert rv.status_code == 200
     assert "There is not enought place in this competition" in data
     assert context["competition"]["numberOfPlaces"] == competitions_places_before
     assert context["club"]["points"] == club_points_before
+
+
+def test_past_competition_display(client):
+    app, templates = client
+    clubs = server.loadClubs()
+    competitions = server.loadCompetitions()
+    rv = app.post(
+        "/showSummary", data=dict(email=clubs[0]["email"]), follow_redirects=True
+    )
+    data = rv.data.decode()
+    # print(data)
+    assert rv.status_code == 200
+    assert f'<a href="/book/Comp1/Club1">Book Places</a>' in data
+    assert f'<a href="/book/Comp2/Club1">Book Places</a>' in data
+    assert f'<a href="/book/Comp3/Club1">Book Places</a>' not in data

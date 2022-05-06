@@ -37,6 +37,7 @@ def create_app():
                     "welcome.html",
                     club=club,
                     competitions=competitions,
+                    clubs=clubs,
                     current_date=CURRENT_DATE,
                 )
         return render_template("index.html", message="Email not found, try again")
@@ -55,6 +56,7 @@ def create_app():
                 "welcome.html",
                 club=club,
                 competitions=competitions,
+                clubs=clubs,
                 current_date=CURRENT_DATE,
             )
 
@@ -81,6 +83,7 @@ def create_app():
                 "welcome.html",
                 club=club,
                 competitions=competitions,
+                clubs=clubs,
                 current_date=CURRENT_DATE,
             )
         return render_template(

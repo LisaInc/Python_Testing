@@ -21,6 +21,7 @@ def test_showSummary_valid_email(client):
     assert rv.status_code == 200
     assert context["club"] == clubs[0]
     assert context["competitions"] == competitions
+    assert context["clubs"] == clubs
 
 
 def test_showSummary_invalid_email(client):
@@ -130,3 +131,24 @@ def test_past_competition_display(client):
     assert f'<a href="/book/Comp1/Club1">Book Places</a>' in data
     assert f'<a href="/book/Comp2/Club1">Book Places</a>' in data
     assert f'<a href="/book/Comp3/Club1">Book Places</a>' not in data
+
+
+def test_loadClub():
+    clubs = [
+        {"name": "Simply Lift", "email": "john@simplylift.co", "points": "13"},
+        {"name": "Iron Temple", "email": "admin@irontemple.com", "points": "4"},
+        {"name": "She Lifts", "email": "kate@shelifts.co.uk", "points": "12"},
+    ]
+    assert server.loadClubs() == clubs
+
+
+def test_loadCompetition():
+    competitions = [
+        {
+            "name": "Spring Festival",
+            "date": "2023-03-27 10:00:00",
+            "numberOfPlaces": "25",
+        },
+        {"name": "Fall Classic", "date": "2020-10-22 13:30:00", "numberOfPlaces": "13"},
+    ]
+    assert server.loadCompetitions() == competitions

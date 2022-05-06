@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from flask import Flask, render_template, request, redirect, flash, url_for
 
 
@@ -21,16 +22,22 @@ def create_app():
     competitions = loadCompetitions()
     clubs = loadClubs()
 
+    CURRENT_DATE = str(date.today())
+
     @app.route("/")
     def index():
         return render_template("index.html")
 
     @app.route("/showSummary", methods=["POST"])
     def showSummary():
+
         for club in clubs:
             if club["email"] == request.form["email"]:
                 return render_template(
-                    "welcome.html", club=club, competitions=competitions
+                    "welcome.html",
+                    club=club,
+                    competitions=competitions,
+                    current_date=CURRENT_DATE,
                 )
         return render_template("index.html", message="Email not found, try again")
 
@@ -44,7 +51,12 @@ def create_app():
             )
         else:
             flash("Something went wrong-please try again")
-            return render_template("welcome.html", club=club, competitions=competitions)
+            return render_template(
+                "welcome.html",
+                club=club,
+                competitions=competitions,
+                current_date=CURRENT_DATE,
+            )
 
     @app.route("/purchasePlaces", methods=["POST"])
     def purchasePlaces():
@@ -64,7 +76,12 @@ def create_app():
                 int(competition["numberOfPlaces"]) - placesRequired
             )
             flash("Great-booking complete!")
-            return render_template("welcome.html", club=club, competitions=competitions)
+            return render_template(
+                "welcome.html",
+                club=club,
+                competitions=competitions,
+                current_date=CURRENT_DATE,
+            )
         return render_template(
             "booking.html", club=club, competition=competition, message=message
         )

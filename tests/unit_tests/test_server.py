@@ -50,7 +50,7 @@ def test_purchasePlaces_valid_club_points(client):
     template, context = templates[0]
     data = rv.data.decode()
     assert rv.status_code == 200
-    # assert context["club"]["points"] == club_points_before - 10
+    assert context["club"]["points"] == club_points_before - 10
     assert (
         context["competitions"][0]["numberOfPlaces"] == competitions_places_before - 10
     )
@@ -126,7 +126,6 @@ def test_past_competition_display(client):
         "/showSummary", data=dict(email=clubs[0]["email"]), follow_redirects=True
     )
     data = rv.data.decode()
-    # print(data)
     assert rv.status_code == 200
     assert f'<a href="/book/Comp1/Club1">Book Places</a>' in data
     assert f'<a href="/book/Comp2/Club1">Book Places</a>' in data

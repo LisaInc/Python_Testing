@@ -71,13 +71,13 @@ def create_app():
             message = "You can't book more than 12 places per competition"
         elif placesRequired > int(competition["numberOfPlaces"]):
             message = "There is not enought place in this competition"
-        elif placesRequired > int(club["points"]):
+        elif placesRequired > int(club["points"]) * 3:
             message = "Your club don't have enought points"
         else:
             competition["numberOfPlaces"] = (
                 int(competition["numberOfPlaces"]) - placesRequired
             )
-            club["points"] = int(club["points"]) - placesRequired
+            club["points"] = int(club["points"]) - (placesRequired * 3)
             flash("Great-booking complete!")
             return render_template(
                 "welcome.html",

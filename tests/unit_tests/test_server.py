@@ -43,17 +43,15 @@ def test_purchasePlaces_valid_club_points(client):
     competitions_places_before = int(competitions[0]["numberOfPlaces"])
     rv = app.post(
         "/purchasePlaces",
-        data=dict(
-            club=clubs[0]["name"], competition=competitions[0]["name"], places=10
-        ),
+        data=dict(club=clubs[0]["name"], competition=competitions[0]["name"], places=3),
         follow_redirects=True,
     )
     template, context = templates[0]
     data = rv.data.decode()
     assert rv.status_code == 200
-    assert context["club"]["points"] == club_points_before - 10
+    assert context["club"]["points"] == club_points_before - 3 * 3
     assert (
-        context["competitions"][0]["numberOfPlaces"] == competitions_places_before - 10
+        context["competitions"][0]["numberOfPlaces"] == competitions_places_before - 3
     )
     assert "Great-booking complete!" in data
 

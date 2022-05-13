@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash, url_for, abort
 
 
 def loadClubs():
@@ -30,7 +30,6 @@ def create_app():
 
     @app.route("/showSummary", methods=["POST"])
     def showSummary():
-
         for club in clubs:
             if club["email"] == request.form["email"]:
                 return render_template(
@@ -44,21 +43,14 @@ def create_app():
 
     @app.route("/book/<competition>/<club>")
     def book(competition, club):
-        foundClub = [c for c in clubs if c["name"] == club][0]
-        foundCompetition = [c for c in competitions if c["name"] == competition][0]
+        foundClub = [c for c in clubs if c["name"] == club]
+        foundCompetition = [c for c in competitions if c["name"] == competition]
         if foundClub and foundCompetition:
             return render_template(
-                "booking.html", club=foundClub, competition=foundCompetition
+                "booking.html", club=foundClub[0], competition=foundCompetition[0]
             )
         else:
-            flash("Something went wrong-please try again")
-            return render_template(
-                "welcome.html",
-                club=club,
-                competitions=competitions,
-                clubs=clubs,
-                current_date=CURRENT_DATE,
-            )
+            abort(404)
 
     @app.route("/purchasePlaces", methods=["POST"])
     def purchasePlaces():
@@ -66,31 +58,31 @@ def create_app():
             c for c in competitions if c["name"] == request.form["competition"]
         ][0]
         club = [c for c in clubs if c["name"] == request.form["club"]][0]
-        placesRequired = int(request.form["places"])
-        if placesRequired > 12:
-            message = "You can't book more than 12 places per competition"
-        elif placesRequired > int(competition["numberOfPlaces"]):
-            message = "There is not enought place in this competition"
-        elif placesRequired > int(club["points"]) * 3:
-            message = "Your club don't have enought points"
-        else:
-            competition["numberOfPlaces"] = (
-                int(competition["numberOfPlaces"]) - placesRequired
-            )
-            club["points"] = int(club["points"]) - (placesRequired * 3)
-            flash("Great-booking complete!")
-            return render_template(
-                "welcome.html",
-                club=club,
-                competitions=competitions,
-                clubs=clubs,
-                current_date=CURRENT_DATE,
-            )
+        message = ""
+        if request.form["places"]:
+            placesRequired = int(request.form["places"])
+            if placesRequired > 12:
+                message = "You can't book more than 12 places per competition"
+            elif placesRequired > int(competition["numberOfPlaces"]):
+                message = "There is not enought place in this competition"
+            elif placesRequired * 3 > int(club["points"]):
+                message = "Your club don't have enought points"
+            else:
+                competition["numberOfPlaces"] = (
+                    int(competition["numberOfPlaces"]) - placesRequired
+                )
+                club["points"] = int(club["points"]) - (placesRequired * 3)
+                flash("Great-booking complete!")
+                return render_template(
+                    "welcome.html",
+                    club=club,
+                    competitions=competitions,
+                    clubs=clubs,
+                    current_date=CURRENT_DATE,
+                )
         return render_template(
             "booking.html", club=club, competition=competition, message=message
         )
-
-    # TODO: Add route for points display
 
     @app.route("/logout")
     def logout():
@@ -101,5 +93,5 @@ def create_app():
 
 app = create_app()
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     app.run()

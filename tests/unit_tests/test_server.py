@@ -10,6 +10,14 @@ def test_index(client):
     assert response.status_code == 200
 
 
+def test_logout(client):
+    app, templates = client
+    response = app.get("logout", follow_redirects=True)
+    template, context = templates[0]
+    assert response.status_code == 200
+    assert template.name == "index.html"
+
+
 def test_showSummary_valid_email(client):
     app, templates = client
     clubs = server.loadClubs()
@@ -35,6 +43,22 @@ def test_showSummary_invalid_email(client):
     assert "Email not found, try again" in data
 
 
+def test_book_valid_url(client):
+    app, templates = client
+    clubs = server.loadClubs()
+    competitions = server.loadCompetitions()
+    url = f"/book/{competitions[0]['name']}/{clubs[0]['name']}"
+    rv = app.get(url, follow_redirects=True)
+    assert rv.status_code == 200
+
+
+def test_book_invalid_url(client):
+    app, templates = client
+    url = f"book/test/test"
+    rv = app.get(url, follow_redirects=True)
+    assert rv.status_code == 404
+
+
 def test_purchasePlaces_valid_club_points(client):
     app, templates = client
     clubs = server.loadClubs()
@@ -56,12 +80,12 @@ def test_purchasePlaces_valid_club_points(client):
     assert "Great-booking complete!" in data
 
 
-def test_purchasePlaces_invalid_points(client):
+def test_purchasePlaces_invalid_club_points(client):
     app, templates = client
     clubs = server.loadClubs()
     competitions = server.loadCompetitions()
-    club_points_before = int(clubs[0]["points"])
-    competitions_places_before = competitions[1]["numberOfPlaces"]
+    club_points_before = clubs[1]["points"]
+    competitions_places_before = competitions[0]["numberOfPlaces"]
     rv = app.post(
         "/purchasePlaces",
         data=dict(club=clubs[1]["name"], competition=competitions[0]["name"], places=8),
@@ -69,13 +93,13 @@ def test_purchasePlaces_invalid_points(client):
     )
     template, context = templates[0]
     data = rv.data.decode()
-    assert rv.status_code == 2200
-    assert "Your club don&#39;t have enought points" in data
+    assert rv.status_code == 200
+    assert context["message"] == "Your club don't have enought points"
     assert context["competition"]["numberOfPlaces"] == competitions_places_before
     assert context["club"]["points"] == club_points_before
 
 
-def test_purchasePlaces_invalid_points(client):
+def test_purchasePlaces_invalid_places(client):
     app, templates = client
     clubs = server.loadClubs()
     club_points_before = clubs[0]["points"]
@@ -91,12 +115,12 @@ def test_purchasePlaces_invalid_points(client):
     data = rv.data.decode()
     template, context = templates[0]
     assert rv.status_code == 200
-    assert "You can&#39;t book more than 12 places per competition" in data
+    assert context["message"] == "You can't book more than 12 places per competition"
     assert context["competition"]["numberOfPlaces"] == competitions_places_before
     assert context["club"]["points"] == club_points_before
 
 
-def test_purchasePlaces_invalid_competition_points(client):
+def test_purchasePlaces_invalid_competition_places(client):
     app, templates = client
     clubs = server.loadClubs()
     club_points_before = clubs[0]["points"]
@@ -112,7 +136,7 @@ def test_purchasePlaces_invalid_competition_points(client):
     data = rv.data.decode()
     template, context = templates[0]
     assert rv.status_code == 200
-    assert "There is not enought place in this competition" in data
+    assert context["message"] == "There is not enought place in this competition"
     assert context["competition"]["numberOfPlaces"] == competitions_places_before
     assert context["club"]["points"] == club_points_before
 

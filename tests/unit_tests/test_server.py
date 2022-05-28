@@ -1,5 +1,3 @@
-import re
-import pytest
 from tests.conftest import client
 import server
 
@@ -59,7 +57,7 @@ def test_book_invalid_url(client):
     assert rv.status_code == 404
 
 
-def test_purchasePlaces_valid_club_points(client):
+def test_purchasePlaces_valid(client):
     app, templates = client
     clubs = server.loadClubs()
     competitions = server.loadCompetitions()
@@ -172,5 +170,6 @@ def test_loadCompetition():
             "numberOfPlaces": "25",
         },
         {"name": "Fall Classic", "date": "2020-10-22 13:30:00", "numberOfPlaces": "13"},
+        {"name": "Test", "date": "2022-10-22 13:30:00", "numberOfPlaces": "8"},
     ]
     assert server.loadCompetitions() == competitions
